@@ -1,15 +1,15 @@
-import mysql.connector   # Importa a biblioteca para conexão com o banco de dados MySQL
-from pylogix import PLC  # Importa a biblioteca para comunicação com o PLC Logix
-import schedule          # Importa a biblioteca para agendamento de tarefas
-import time              # Importa a biblioteca de tempo para gerenciamento de tempo
-import json              # Importa a biblioteca do JSON para arquivos
+import mysql.connector   # Import the library for connecting to the MySQL database
+from pylogix import PLC  # Import the library for communication with the PLC Logix
+import schedule          # Import the library for task scheduling
+import time              # Import the time library for time management
+import json              # Import the JSON library for file operations
 
 def read_and_insert_data():
-    # Carregar as informações de acesso do arquivo JSON
+    # Load the access information from the JSON file
     with open((r'Grafana\config.json'), 'r') as f:
         config = json.load(f)
 
-    # Configurar a conexão com o banco de dados MySQL
+    # Configure the connection to the MySQL database
     db_connection = mysql.connector.connect(
         host=config['mysql']['host'],
         user=config['mysql']['user'],
@@ -17,40 +17,40 @@ def read_and_insert_data():
         database=config['mysql']['database']
     )
 
-    # Criar um cursor para executar consultas SQL
+    # Create a cursor to execute SQL queries
     cursor = db_connection.cursor()
 
-    # Configurar a conexão com o PLC
+    # Configure the connection to the PLC
     with PLC() as comm:
-        comm.IPAddress = '192.168.15.100'
+        comm.IPAddress = 'your_plc_ip'
 
-        # Lista de tags que você deseja ler
-        tags_to_read = ['Etanol', 'Oleo', 'Acido_Graxo', 'IOP', 'DDGS', 'Energia']
+        # List of tags you want to read
+        tags_to_read = ['Tag1', 'Tag2', 'Tag3', 'Tag4', 'Tag5', 'Tag6']
 
         for tag_name in tags_to_read:
             try:
                 ret = comm.Read(tag_name)
 
-                # Inserir os dados lidos na tabela MySQL
+                # Insert the read data into the MySQL table
                 sql = "INSERT INTO grafana (tag_name, tag_value, tag_status) VALUES (%s, %s, %s)"
                 val = (ret.TagName, ret.Value, ret.Status)
                 cursor.execute(sql, val)
 
-                # Confirmar a transação
+                # Confirm the transaction
                 db_connection.commit()
 
-                print("Dados da tag", tag_name, "inseridos com sucesso.")
+                print("Data for tag", tag_name, "successfully inserted.")
             except Exception as e:
-                print("Erro ao ler ou inserir os dados da tag", tag_name + ":", str(e))
+                print("Error reading or inserting data for tag", tag_name + ":", str(e))
 
-    # Fechar a conexão com o banco de dados
+    # Close the connection to the database
     cursor.close()
     db_connection.close()
 
-# Agendar a função para ser executada a cada 30 segundos
+# Schedule the function to run every 10 seconds
 schedule.every(10).seconds.do(read_and_insert_data)
 
-# Loop para manter o programa em execução
+# Loop to keep the program running
 while True:
     schedule.run_pending()
     time.sleep(1)
