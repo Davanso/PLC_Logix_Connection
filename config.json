@@ -1,0 +1,9 @@
+{
+    "mysql": {
+      "host": "localhost",
+      "user": "root",
+      "password": "Exons#01",
+      "database": "db_grafana"
+    }
+  }
+  
