@@ -32,7 +32,7 @@ def read_and_insert_data():
                 ret = comm.Read(tag_name)
 
                 # Insert the read data into the MySQL table
-                sql = "INSERT INTO grafana (tag_name, tag_value, tag_status) VALUES (%s, %s, %s)"
+                sql = "INSERT INTO your_table (tag_name, tag_value, tag_status) VALUES (%s, %s, %s)"
                 val = (ret.TagName, ret.Value, ret.Status)
                 cursor.execute(sql, val)
 
